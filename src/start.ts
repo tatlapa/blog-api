@@ -1,14 +1,16 @@
-const mongoose = require('mongoose');
-const app = require('./server');
-require('dotenv').config({ path: './config.env' });
+import mongoose from 'mongoose';
+import app from './server';
+import dotenv from 'dotenv';
 
-const PORT = process.env.PORT || 3000;
+dotenv.config({ path: './config.env' });
+
+const PORT: string | number = process.env.PORT || 3000;
 
 mongoose
-  .connect(process.env.MONGODB_URI, {
+  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/blog-api', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  })
+  } as mongoose.ConnectOptions)
   .then(() => {
     console.log('✅ Connexion à MongoDB établie');
     app.listen(PORT, () => {
@@ -17,7 +19,7 @@ mongoose
       console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
     });
   })
-  .catch(err => {
+  .catch((err: Error) => {
     console.error('❌ Erreur de connexion à MongoDB:', err.message);
     process.exit(1);
   });
@@ -25,7 +27,15 @@ mongoose
 // Gestion de l'arrêt gracieux
 process.on('SIGTERM', () => {
   console.log('🛑 Arrêt gracieux du serveur...');
-  mongoose.connection.close(() => {
+  mongoose.connection.close().then(() => {
+    console.log('✅ Connexion MongoDB fermée');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 Arrêt gracieux du serveur...');
+  mongoose.connection.close().then(() => {
     console.log('✅ Connexion MongoDB fermée');
     process.exit(0);
   });

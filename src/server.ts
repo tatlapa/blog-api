@@ -1,18 +1,20 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const morgan = require('morgan');
-require('dotenv').config({ path: './config.env' });
+import express, { Application, Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
 
 // Import des routes
-const authRoutes = require('./routes/auth');
-const articleRoutes = require('./routes/articles');
+import authRoutes from './routes/auth';
+import articleRoutes from './routes/articles';
 
 // Import du middleware d'authentification
-const { authenticateToken } = require('./middleware/auth');
+import { authenticateToken } from './middleware/auth';
 
-const app = express();
+dotenv.config({ path: './config.env' });
+
+const app: Application = express();
 
 // Configuration de la sécurité
 app.use(helmet());
@@ -52,7 +54,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/articles', authenticateToken, articleRoutes);
 
 // Route de test
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     status: 'OK',
     message: 'API Blog fonctionnelle',
@@ -61,7 +63,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Gestion des erreurs 404
-app.use('*', (req, res) => {
+app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: 'Route non trouvée',
@@ -69,14 +71,14 @@ app.use('*', (req, res) => {
 });
 
 // Middleware de gestion d'erreurs global
-app.use((err, req, res, next) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
 
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
       message: 'Erreur de validation',
-      errors: Object.values(err.errors).map(e => e.message),
+      errors: Object.values((err as any).errors).map((e: any) => e.message),
     });
   }
 
@@ -93,4 +95,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;

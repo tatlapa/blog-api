@@ -1,6 +1,6 @@
-# Blog API - Node.js
+# Blog API - Node.js + TypeScript
 
-API REST pour la gestion d'un blog avec authentification JWT et CRUD d'articles.
+API REST pour la gestion d'un blog avec authentification JWT et CRUD d'articles, développée en TypeScript.
 
 ## 🚀 Démarrage rapide
 
@@ -45,7 +45,12 @@ net start MongoDB
 ### 4. Lancer l'API
 
 ```bash
+# Mode développement (avec hot reload)
 npm run dev
+
+# Mode production (nécessite un build préalable)
+npm run build
+npm start
 ```
 
 L'API sera disponible sur `http://localhost:8000`
@@ -147,3 +152,13 @@ Authorization: Bearer <token>
 GET /health
 ```
 
+## 🔧 Scripts disponibles
+
+```bash
+npm run dev        # Démarrer en développement (avec hot reload)
+npm run build      # Compiler TypeScript
+npm start          # Démarrer en production
+npm test           # Lancer les tests
+npm run lint       # Vérifier le code
+npm run format     # Formater le code
+```

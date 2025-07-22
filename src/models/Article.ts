@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema } from 'mongoose';
+import { IArticle, IComment } from '../types';
 
-const articleSchema = new mongoose.Schema(
+const articleSchema = new Schema<IArticle>(
   {
     title: {
       type: String,
@@ -128,7 +129,7 @@ articleSchema.pre('save', function (next) {
     .replace(/[^a-z0-9\s-]/g, '') // Supprimer les caractères spéciaux
     .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
     .replace(/-+/g, '-') // Remplacer les tirets multiples par un seul
-    .trim('-'); // Supprimer les tirets en début et fin
+    .trim(); // Supprimer les tirets en début et fin
 
   // Calculer le temps de lecture (environ 200 mots par minute)
   const wordCount = this.content.split(/\s+/).length;
@@ -156,18 +157,18 @@ articleSchema.pre('save', function (next) {
 });
 
 // Méthode pour incrémenter les vues
-articleSchema.methods.incrementViews = function () {
+articleSchema.methods.incrementViews = function (): Promise<IArticle> {
   this.views += 1;
   return this.save();
 };
 
 // Méthode pour ajouter/retirer un like
-articleSchema.methods.toggleLike = function (userId) {
-  const likeIndex = this.likes.indexOf(userId);
+articleSchema.methods.toggleLike = function (userId: string): Promise<IArticle> {
+  const likeIndex = this.likes.indexOf(userId as any);
 
   if (likeIndex === -1) {
     // Ajouter le like
-    this.likes.push(userId);
+    this.likes.push(userId as any);
   } else {
     // Retirer le like
     this.likes.splice(likeIndex, 1);
@@ -177,40 +178,15 @@ articleSchema.methods.toggleLike = function (userId) {
 };
 
 // Méthode pour ajouter un commentaire
-articleSchema.methods.addComment = function (userId, content) {
+articleSchema.methods.addComment = function (userId: string, content: string): Promise<IArticle> {
   this.comments.push({
-    user: userId,
+    user: userId as any,
     content: content,
   });
 
   return this.save();
 };
 
-// Méthode statique pour trouver les articles publiés
-articleSchema.statics.findPublished = function () {
-  return this.find({ status: 'published' })
-    .populate('author', 'username avatar')
-    .sort({ createdAt: -1 });
-};
 
-// Méthode statique pour trouver les articles par catégorie
-articleSchema.statics.findByCategory = function (category) {
-  return this.find({
-    category: category,
-    status: 'published',
-  })
-    .populate('author', 'username avatar')
-    .sort({ createdAt: -1 });
-};
 
-// Méthode statique pour rechercher des articles
-articleSchema.statics.search = function (query) {
-  return this.find({
-    $text: { $search: query },
-    status: 'published',
-  })
-    .populate('author', 'username avatar')
-    .sort({ score: { $meta: 'textScore' } });
-};
-
-module.exports = mongoose.model('Article', articleSchema);
+export default mongoose.model<IArticle>('Article', articleSchema);

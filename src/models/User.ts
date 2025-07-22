@@ -1,8 +1,9 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import mongoose, { Schema, Document } from 'mongoose';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { IUser } from '../types';
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<IUser>(
   {
     username: {
       type: String,
@@ -23,23 +24,7 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Le mot de passe doit contenir au moins 6 caractères'],
       select: false, // Ne pas inclure le mot de passe dans les requêtes par défaut
     },
-    role: {
-      type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
-    },
-    avatar: {
-      type: String,
-      default: '',
-    },
-    bio: {
-      type: String,
-      maxlength: [500, 'La bio ne peut pas dépasser 500 caractères'],
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
+      
     lastLogin: {
       type: Date,
     },
@@ -53,7 +38,6 @@ const userSchema = new mongoose.Schema(
 
 // Index pour améliorer les performances
 userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
 
 // Virtual pour les articles de l'utilisateur
 userSchema.virtual('articles', {
@@ -68,21 +52,21 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
-    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_ROUNDS) || 12);
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_ROUNDS || '12'));
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
-    next(error);
+    next(error as Error);
   }
 });
 
 // Méthode pour comparer les mots de passe
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Méthode pour générer un token JWT
-userSchema.methods.generateAuthToken = function () {
+userSchema.methods.generateAuthToken = function (): string {
   return jwt.sign(
     {
       id: this._id,
@@ -90,26 +74,16 @@ userSchema.methods.generateAuthToken = function () {
       email: this.email,
       role: this.role,
     },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE }
+    process.env.JWT_SECRET || 'fallback_secret',
+    { expiresIn: process.env.JWT_EXPIRE || '24h' } as any
   );
 };
 
 // Méthode pour obtenir les informations publiques de l'utilisateur
-userSchema.methods.getPublicProfile = function () {
+userSchema.methods.getPublicProfile = function (): Partial<IUser> {
   const userObject = this.toObject();
   delete userObject.password;
   return userObject;
 };
 
-// Méthode statique pour trouver un utilisateur par email
-userSchema.statics.findByEmail = function (email) {
-  return this.findOne({ email }).select('+password');
-};
-
-// Méthode statique pour trouver un utilisateur par username
-userSchema.statics.findByUsername = function (username) {
-  return this.findOne({ username });
-};
-
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.model<IUser>('User', userSchema);

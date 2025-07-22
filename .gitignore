@@ -4,6 +4,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Build output
+dist/
+build/
+
 # Environment variables
 .env
 .env.local
@@ -29,7 +33,6 @@ coverage/
 .nyc_output
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # Optional npm cache directory
@@ -75,14 +78,14 @@ jspm_packages/
 # TernJS port file
 .tern-port
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -91,6 +94,5 @@ jspm_packages/
 ehthumbs.db
 Thumbs.db
 
-# Temporary files
-tmp/
-temp/ 
+# TypeScript
+*.tsbuildinfo 
