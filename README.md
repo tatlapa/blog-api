@@ -2,163 +2,38 @@
 
 API REST pour la gestion d'un blog avec authentification JWT et CRUD d'articles, développée en TypeScript.
 
-## 🚀 Démarrage rapide
+## Prérequis
 
-### 1. Installation
+- **Node.js** >= 18
+- **npm**
+- **MongoDB** (local ou cloud)
 
-```bash
-npm install
-```
+## Installation & Lancement en local
 
-### 2. Configuration
+1. Installez les dépendances :
+   ```bash
+   npm install
+   ```
+2. Copiez le fichier d'environnement exemple et adaptez-le si besoin :
+   ```bash
+   cp config.env.example config.env
+   ```
+3. Lancez MongoDB sur votre machine (ou utilisez un cluster distant).
+4. Démarrez le serveur :
+   ```bash
+   npm run dev
+   ```
 
-Copiez le fichier de configuration :
+Le serveur écoute par défaut sur http://localhost:8000
 
-```bash
-cp config.env.example config.env
-```
+---
 
-Éditez `config.env` avec vos paramètres :
+## Endpoints disponibles
 
-```env
-MONGODB_URI=mongodb://localhost:27017/blog-api
-JWT_SECRET=votre_secret_jwt_tres_securise_ici
-JWT_EXPIRE=24h
-PORT=8000
-NODE_ENV=development
-BCRYPT_ROUNDS=12
-```
-
-### 3. Démarrer MongoDB
-
-```bash
-# macOS
-brew services start mongodb-community
-
-# Linux
-sudo systemctl start mongod
-
-# Windows
-net start MongoDB
-```
-
-### 4. Lancer l'API
-
-```bash
-# Mode développement (avec hot reload)
-npm run dev
-
-# Mode production (nécessite un build préalable)
-npm run build
-npm start
-```
-
-L'API sera disponible sur `http://localhost:8000`
-
-## 📚 Endpoints
-
-### Base URL
-
-```
-http://localhost:8000/api
-```
-
-### Authentification
-
-#### Inscription
-
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "email": "test@example.com",
-  "password": "Password123",
-  "confirmPassword": "Password123"
-}
-```
-
-#### Connexion
-
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "test@example.com",
-  "password": "Password123"
-}
-```
-
-#### Récupérer le profil
-
-```http
-GET /auth/me
-Authorization: Bearer <token>
-```
-
-### Articles
-
-#### Récupérer tous les articles publics
-
-```http
-GET /articles/public
-```
-
-#### Récupérer un article spécifique
-
-```http
-GET /articles/:id
-```
-
-#### Créer un article
-
-```http
-POST /articles
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Mon article",
-  "content": "Contenu de l'article avec au moins 50 caractères...",
-  "status": "draft"
-}
-```
-
-#### Mettre à jour un article
-
-```http
-PUT /articles/:id
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Titre mis à jour",
-  "content": "Nouveau contenu...",
-  "status": "published"
-}
-```
-
-#### Supprimer un article
-
-```http
-DELETE /articles/:id
-Authorization: Bearer <token>
-```
-
-### Health Check
-
-```http
-GET /health
-```
-
-## 🔧 Scripts disponibles
-
-```bash
-npm run dev        # Démarrer en développement (avec hot reload)
-npm run build      # Compiler TypeScript
-npm start          # Démarrer en production
-npm test           # Lancer les tests
-npm run lint       # Vérifier le code
-npm run format     # Formater le code
-```
+- **POST /api/auth/register** : Inscription
+- **POST /api/auth/login** : Connexion
+- **POST /api/auth/logout** : Déconnexion
+- **GET /api/articles** : Liste tous les articles
+- **POST /api/articles** : Créer un article (authentifié)
+- **PUT /api/articles/:id** : Modifier un article (authentifié)
+- **DELETE /api/articles/:id** : Supprimer un article (authentifié)
