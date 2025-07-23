@@ -21,7 +21,6 @@ export interface IArticle extends Document {
   slug: string;
   content: string;
   excerpt?: string;
-  author: IUser['_id'];
   tags: string[];
   status: 'draft' | 'published' | 'archived';
   featuredImage?: string;

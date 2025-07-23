@@ -44,7 +44,7 @@ const articleValidation = [
 
 // @route   GET /api/articles
 // @desc    Récupérer tous les articles (avec pagination et filtres)
-// @access  Private
+// @access  Public
 router.get(
   '/',
   [
@@ -54,12 +54,8 @@ router.get(
       .withMessage('Le numéro de page doit être un entier positif'),
     query('limit')
       .optional()
-      .isInt({ min: 1, max: 50 })
-      .withMessage('La limite doit être entre 1 et 50'),
-    query('status')
-      .optional()
-      .isIn(['draft', 'published', 'archived'])
-      .withMessage('Statut invalide'),
+      .isInt({ min: 1, max: 20 })
+      .withMessage('La limite doit être entre 1 et 20'),
     query('search')
       .optional()
       .isString()
@@ -72,7 +68,7 @@ router.get(
       .withMessage('Champ de tri invalide'),
     query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Ordre de tri invalide'),
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -83,17 +79,9 @@ router.get(
         });
       }
 
-      const {
-        page = 1,
-        limit = 10,
-        status,
-        search,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
-      } = req.query;
+      const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
-      const filter: any = { author: req.user?._id };
-      if (status) filter.status = status;
+      const filter: any = {};
       if (search) {
         filter.$text = { $search: search as string };
       }
@@ -103,7 +91,6 @@ router.get(
 
       const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
       const articles = await Article.find(filter)
-        .populate('author', 'username avatar')
         .sort(sort)
         .skip(skip)
         .limit(parseInt(limit as string))
@@ -140,96 +127,12 @@ router.get(
   }
 );
 
-// @route   GET /api/articles/public
-// @desc    Récupérer les articles publics (pour les visiteurs)
-// @access  Public
-router.get(
-  '/public',
-  [
-    query('page')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Le numéro de page doit être un entier positif'),
-    query('limit')
-      .optional()
-      .isInt({ min: 1, max: 20 })
-      .withMessage('La limite doit être entre 1 et 20'),
-    query('search')
-      .optional()
-      .isString()
-      .trim()
-      .isLength({ min: 2 })
-      .withMessage('La recherche doit contenir au moins 2 caractères'),
-    query('sortBy')
-      .optional()
-      .isIn(['title', 'createdAt', 'updatedAt', 'views', 'readTime'])
-      .withMessage('Champ de tri invalide'),
-    query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Ordre de tri invalide'),
-  ],
-  async (req: Request, res: Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Erreurs de validation',
-          errors: errors.array(),
-        });
-      }
 
-      const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
-
-      const filter: any = { status: 'published' };
-      if (search) {
-        filter.$text = { $search: search as string };
-      }
-
-      const sort: any = {};
-      sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
-
-      const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
-      const articles = await Article.find(filter)
-        .populate('author', 'username avatar')
-        .sort(sort)
-        .skip(skip)
-        .limit(parseInt(limit as string))
-        .select('-__v');
-
-      const total = await Article.countDocuments(filter);
-      const totalPages = Math.ceil(total / parseInt(limit as string));
-
-      const pagination: PaginationInfo = {
-        currentPage: parseInt(page as string),
-        totalPages,
-        totalItems: total,
-        itemsPerPage: parseInt(limit as string),
-        hasNextPage: parseInt(page as string) < totalPages,
-        hasPrevPage: parseInt(page as string) > 1,
-      };
-
-      const response: ArticlesResponse = {
-        articles,
-        pagination,
-      };
-
-      res.json({
-        success: true,
-        data: response,
-      });
-    } catch (error) {
-      console.error('Erreur lors de la récupération des articles publics:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur lors de la récupération des articles',
-      });
-    }
-  }
-);
 
 // @route   POST /api/articles
 // @desc    Créer un nouvel article
 // @access  Private
-router.post('/', articleValidation, async (req: AuthRequest, res: Response) => {
+router.post('/', authenticateToken, articleValidation, async (req: AuthRequest, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -258,11 +161,9 @@ router.post('/', articleValidation, async (req: AuthRequest, res: Response) => {
       tags,
       featuredImage,
       seo,
-      author: req.user?._id,
     });
 
     await article.save();
-    await article.populate('author', 'username avatar');
 
     res.status(201).json({
       success: true,
@@ -283,55 +184,58 @@ router.post('/', articleValidation, async (req: AuthRequest, res: Response) => {
 // @route   PUT /api/articles/:id
 // @desc    Mettre à jour un article
 // @access  Private
-router.put('/:id', articleValidation, async (req: AuthRequest, res: Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
+router.put(
+  '/:id',
+  authenticateToken,
+  articleValidation,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Erreurs de validation',
+          errors: errors.array(),
+        });
+      }
+
+      const { title, content, excerpt, status, tags, featuredImage, seo } = req.body;
+
+      const updatedArticle = await Article.findByIdAndUpdate(
+        req.params['id'],
+        {
+          title,
+          content,
+          excerpt,
+          status,
+          tags,
+          featuredImage,
+          seo,
+        },
+        { new: true, runValidators: true }
+      ).select('-__v');
+
+      res.json({
+        success: true,
+        message: 'Article mis à jour avec succès',
+        data: {
+          article: updatedArticle,
+        },
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'article:", error);
+      res.status(500).json({
         success: false,
-        message: 'Erreurs de validation',
-        errors: errors.array(),
+        message: "Erreur lors de la mise à jour de l'article",
       });
     }
-
-    const { title, content, excerpt, status, tags, featuredImage, seo } = req.body;
-
-    const updatedArticle = await Article.findByIdAndUpdate(
-      req.params['id'],
-      {
-        title,
-        content,
-        excerpt,
-        status,
-        tags,
-        featuredImage,
-        seo,
-      },
-      { new: true, runValidators: true }
-    )
-      .populate('author', 'username avatar')
-      .select('-__v');
-
-    res.json({
-      success: true,
-      message: 'Article mis à jour avec succès',
-      data: {
-        article: updatedArticle,
-      },
-    });
-  } catch (error) {
-    console.error("Erreur lors de la mise à jour de l'article:", error);
-    res.status(500).json({
-      success: false,
-      message: "Erreur lors de la mise à jour de l'article",
-    });
   }
-});
+);
 
 // @route   DELETE /api/articles/:id
 // @desc    Supprimer un article
 // @access  Private
-router.delete('/:id', async (req: AuthRequest, res: Response) => {
+router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     await Article.findByIdAndDelete(req.params['id']);
 

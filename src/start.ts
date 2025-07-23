@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: './config.env' });
 
-const PORT: string | number = process.env.PORT || 3000;
+const PORT: string | number = process.env.PORT || 8000;
 
 mongoose
   .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/blog-api', {

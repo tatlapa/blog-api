@@ -156,4 +156,28 @@ router.post('/login', loginValidation, async (req: Request, res: Response) => {
   }
 });
 
+// @route   POST /api/auth/logout
+// @desc    Déconnexion d'un utilisateur
+// @access  Private
+router.post('/logout', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    // Mettre à jour lastLogin pour tracer la déconnexion
+    if (req.user) {
+      req.user.lastLogin = new Date();
+      await req.user.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Déconnexion réussie',
+    });
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la déconnexion',
+    });
+  }
+});
+
 export default router;

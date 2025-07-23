@@ -25,11 +25,7 @@ const articleSchema = new Schema<IArticle>(
       type: String,
       maxlength: [300, "L'extrait ne peut pas dépasser 300 caractères"],
     },
-    author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, "L'auteur est requis"],
-    },
+
     tags: [
       {
         type: String,
@@ -100,7 +96,6 @@ const articleSchema = new Schema<IArticle>(
 // Index pour améliorer les performances
 articleSchema.index({ title: 'text', content: 'text' });
 articleSchema.index({ slug: 1 });
-articleSchema.index({ author: 1 });
 articleSchema.index({ status: 1 });
 articleSchema.index({ createdAt: -1 });
 
@@ -186,7 +181,5 @@ articleSchema.methods.addComment = function (userId: string, content: string): P
 
   return this.save();
 };
-
-
 
 export default mongoose.model<IArticle>('Article', articleSchema);

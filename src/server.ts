@@ -50,8 +50,8 @@ app.use(express.urlencoded({ extended: true }));
 // Routes publiques
 app.use('/api/auth', authRoutes);
 
-// Routes protégées
-app.use('/api/articles', authenticateToken, articleRoutes);
+// Routes d'articles - publiques et privées
+app.use('/api/articles', articleRoutes);
 
 // Route de test
 app.get('/api/health', (req: Request, res: Response) => {
