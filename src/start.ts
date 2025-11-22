@@ -16,6 +16,7 @@ mongoose
     app.listen(PORT, () => {
       console.log(`🚀 Serveur démarré sur le port ${PORT}`);
       console.log(`📖 API disponible sur http://localhost:${PORT}/api`);
+      console.log(`📚 Documentation Swagger: http://localhost:${PORT}/api-docs`);
       console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
     });
   })

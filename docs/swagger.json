@@ -5,8 +5,8 @@
     "description": "API REST complète pour la gestion d'un blog avec authentification JWT et CRUD d'articles",
     "version": "1.0.0",
     "contact": {
-      "name": "Votre Nom",
-      "email": "votre.email@example.com"
+      "name": "Richard Jérémy",
+      "email": "jeremyrc77.pro@gmail.com"
     },
     "license": {
       "name": "MIT",
@@ -15,7 +15,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/api",
+      "url": "http://localhost:8000/api",
       "description": "Serveur de développement"
     }
   ],
@@ -113,14 +113,7 @@
           },
           "category": {
             "type": "string",
-            "enum": [
-              "technologie",
-              "lifestyle",
-              "voyage",
-              "cuisine",
-              "sport",
-              "autre"
-            ],
+            "enum": ["technologie", "lifestyle", "voyage", "cuisine", "sport", "autre"],
             "description": "Catégorie de l'article"
           },
           "status": {
@@ -268,12 +261,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "username",
-                  "email",
-                  "password",
-                  "confirmPassword"
-                ],
+                "required": ["username", "email", "password", "confirmPassword"],
                 "properties": {
                   "username": {
                     "type": "string",
@@ -505,14 +493,7 @@
             "description": "Filtrer par catégorie",
             "schema": {
               "type": "string",
-              "enum": [
-                "technologie",
-                "lifestyle",
-                "voyage",
-                "cuisine",
-                "sport",
-                "autre"
-              ]
+              "enum": ["technologie", "lifestyle", "voyage", "cuisine", "sport", "autre"]
             }
           },
           {
@@ -619,14 +600,7 @@
                   },
                   "category": {
                     "type": "string",
-                    "enum": [
-                      "technologie",
-                      "lifestyle",
-                      "voyage",
-                      "cuisine",
-                      "sport",
-                      "autre"
-                    ]
+                    "enum": ["technologie", "lifestyle", "voyage", "cuisine", "sport", "autre"]
                   },
                   "status": {
                     "type": "string",
@@ -703,113 +677,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/articles/public": {
-      "get": {
-        "summary": "Récupérer les articles publics",
-        "description": "Récupérer les articles publiés (accès public)",
-        "tags": ["Articles"],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Numéro de page",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Nombre d'éléments par page",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 20,
-              "default": 10
-            }
-          },
-          {
-            "name": "category",
-            "in": "query",
-            "description": "Filtrer par catégorie",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "technologie",
-                "lifestyle",
-                "voyage",
-                "cuisine",
-                "sport",
-                "autre"
-              ]
-            }
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "description": "Recherche textuelle",
-            "schema": {
-              "type": "string",
-              "minLength": 2
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Articles publics récupérés avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "articles": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Article"
-                          }
-                        },
-                        "pagination": {
-                          "type": "object",
-                          "properties": {
-                            "currentPage": {
-                              "type": "integer"
-                            },
-                            "totalPages": {
-                              "type": "integer"
-                            },
-                            "totalItems": {
-                              "type": "integer"
-                            },
-                            "itemsPerPage": {
-                              "type": "integer"
-                            },
-                            "hasNextPage": {
-                              "type": "boolean"
-                            },
-                            "hasPrevPage": {
-                              "type": "boolean"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
                 }
               }
             }
@@ -917,14 +784,7 @@
                   },
                   "category": {
                     "type": "string",
-                    "enum": [
-                      "technologie",
-                      "lifestyle",
-                      "voyage",
-                      "cuisine",
-                      "sport",
-                      "autre"
-                    ]
+                    "enum": ["technologie", "lifestyle", "voyage", "cuisine", "sport", "autre"]
                   },
                   "status": {
                     "type": "string",

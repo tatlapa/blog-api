@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../docs/swagger.json';
 
 // Import des routes
 import authRoutes from './routes/auth';
@@ -46,6 +48,9 @@ if (process.env.NODE_ENV === 'development') {
 // Middleware pour parser le JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Configuration Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes publiques
 app.use('/api/auth', authRoutes);
